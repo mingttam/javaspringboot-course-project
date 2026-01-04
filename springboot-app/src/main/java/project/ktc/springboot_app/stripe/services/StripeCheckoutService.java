@@ -11,6 +11,9 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.payment.interfaces.PaymentService;
 import project.ktc.springboot_app.stripe.dto.PriceCalculationResponse;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +28,11 @@ public class StripeCheckoutService {
 
         private final PaymentService paymentService;
 
-        @Value("${app.frontend.url:https://sybau-education.vercel.app}")
+        @Value("${app.frontend.url:}")
         private String frontendUrl;
+
+        @Value("${app.frontend.url.default:https://sybau-education.vercel.app}")
+        private String defaultFrontendUrl;
 
         /**
          * Creates a Stripe Checkout Session for course enrollment
@@ -81,13 +87,17 @@ public class StripeCheckoutService {
                         metadata.put("discountCode", priceCalculation.getAppliedDiscountCode());
                 }
 
+                // Validate and normalize frontend URL
+                String normalizedFrontendUrl = normalizeFrontendUrl();
+                log.debug("Using frontend URL: {}", normalizedFrontendUrl);
+
                 // Build session parameters
                 SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
                                 .setMode(SessionCreateParams.Mode.PAYMENT)
                                 .setSuccessUrl(
-                                                frontendUrl + "/courses/" + course.getSlug()
+                                                normalizedFrontendUrl + "/courses/" + course.getSlug()
                                                                 + "/success?session_id={CHECKOUT_SESSION_ID}")
-                                .setCancelUrl(frontendUrl + "/courses/" + course.getSlug() + "/cancel")
+                                .setCancelUrl(normalizedFrontendUrl + "/courses/" + course.getSlug() + "/cancel")
                                 .putAllMetadata(metadata)
                                 .setLocale(SessionCreateParams.Locale.EN) // Set locale to English
                                 .addLineItem(
@@ -153,6 +163,34 @@ public class StripeCheckoutService {
         }
 
         /**
+         * Normalizes and validates the frontend URL for Stripe
+         * Ensures URL has a valid scheme (http/https)
+         * 
+         * @return validated frontend URL with proper scheme
+         * @throws IllegalStateException if URL is invalid or not configured
+         */
+        private String normalizeFrontendUrl() {
+                String urlToUse = frontendUrl != null && !frontendUrl.isBlank() ? frontendUrl : defaultFrontendUrl;
+
+                // Validate the URL has a scheme
+                if (urlToUse == null || urlToUse.isBlank()) {
+                        log.error("Frontend URL is not configured. Set FRONTEND_URL environment variable or app.frontend.url property");
+                        throw new IllegalStateException(
+                                        "Frontend URL is not configured. Please set FRONTEND_URL environment variable or app.frontend.url.default property");
+                }
+
+                try {
+                        // Try to parse as URL to validate it has a scheme
+                        new URL(urlToUse);
+                        return urlToUse;
+                } catch (MalformedURLException e) {
+                        log.error("Invalid frontend URL: {}. Error: {}", urlToUse, e.getMessage());
+                        throw new IllegalStateException("Invalid frontend URL: " + urlToUse
+                                        + ". URL must include scheme (https:// or http://)", e);
+                }
+        }
+
+        /**
          * Builds product description including discount information
          */
         private String buildProductDescription(Course course, PriceCalculationResponse priceCalculation) {
@@ -178,14 +216,17 @@ public class StripeCheckoutService {
         public Session createSubscriptionCheckoutSession(String userId, String priceId) throws StripeException {
                 log.info("Creating subscription checkout session for user {} and price {}", userId, priceId);
 
+                String normalizedFrontendUrl = normalizeFrontendUrl();
+
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("userId", userId);
                 metadata.put("type", "subscription");
 
                 SessionCreateParams params = SessionCreateParams.builder()
                                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                                .setSuccessUrl(frontendUrl + "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
-                                .setCancelUrl(frontendUrl + "/subscription/cancel")
+                                .setSuccessUrl(normalizedFrontendUrl
+                                                + "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
+                                .setCancelUrl(normalizedFrontendUrl + "/subscription/cancel")
                                 .putAllMetadata(metadata)
                                 .setLocale(SessionCreateParams.Locale.EN)
                                 .addLineItem(
