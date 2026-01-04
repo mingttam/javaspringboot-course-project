@@ -25,7 +25,7 @@ public class StripeCheckoutService {
 
         private final PaymentService paymentService;
 
-        @Value("${app.frontend.url:http://localhost:3000}")
+        @Value("${app.frontend.url:https://sybau-education.vercel.app}")
         private String frontendUrl;
 
         /**
