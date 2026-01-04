@@ -179,14 +179,19 @@ public class StripeCheckoutService {
                                         "Frontend URL is not configured. Please set FRONTEND_URL environment variable or app.frontend.url.default property");
                 }
 
+                // Add scheme if missing (default to https)
+                if (!urlToUse.startsWith("http://") && !urlToUse.startsWith("https://")) {
+                        urlToUse = "https://" + urlToUse;
+                        log.debug("No scheme detected in frontend URL. Added https:// prefix: {}", urlToUse);
+                }
+
                 try {
-                        // Try to parse as URL to validate it has a scheme
+                        // Try to parse as URL to validate it's properly formatted
                         new URL(urlToUse);
                         return urlToUse;
                 } catch (MalformedURLException e) {
                         log.error("Invalid frontend URL: {}. Error: {}", urlToUse, e.getMessage());
-                        throw new IllegalStateException("Invalid frontend URL: " + urlToUse
-                                        + ". URL must include scheme (https:// or http://)", e);
+                        throw new IllegalStateException("Invalid frontend URL: " + urlToUse, e);
                 }
         }
 
