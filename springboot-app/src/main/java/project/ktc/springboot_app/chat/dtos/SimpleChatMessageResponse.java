@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -45,5 +45,5 @@ public class SimpleChatMessageResponse {
     private String mimeType;
 
     @Schema(description = "Message creation timestamp in ISO 8601 UTC format", example = "2025-08-26T15:30:00Z")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

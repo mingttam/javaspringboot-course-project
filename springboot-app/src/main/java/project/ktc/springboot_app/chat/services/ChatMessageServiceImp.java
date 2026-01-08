@@ -228,7 +228,9 @@ public class ChatMessageServiceImp implements ChatMessageService {
                 .videoDuration(m.getVideoDetail() != null && m.getVideoDetail().getDuration() != null
                         ? m.getVideoDetail().getDuration().intValue()
                         : null)
-                .createdAt(m.getCreatedAt())
+                .createdAt(
+                        m.getCreatedAt() != null ? m.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
+                                : null)
                 .senderThumbnailUrl(m.getSender().getThumbnailUrl())
                 .build();
     }
@@ -399,7 +401,9 @@ public class ChatMessageServiceImp implements ChatMessageService {
                 .fileName(fileName)
                 .fileSize(fileSize)
                 .mimeType(mimeType)
-                .createdAt(m.getCreatedAt())
+                .createdAt(
+                        m.getCreatedAt() != null ? m.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
+                                : null)
                 .build();
     }
 

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -60,8 +60,8 @@ public class ChatMessageResponse {
     @Schema(description = "Video duration in seconds for VIDEO type messages", example = "300")
     private Integer videoDuration;
 
-    @Schema(description = "Message creation timestamp", example = "2025-08-26T10:30:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "Message creation timestamp in UTC", example = "2025-08-26T10:30:00Z")
+    private Instant createdAt;
 
     @Schema(description = "Thumbnail URL of the sender", example = "https://example.com/profiles/johndoe.jpg")
     private String senderThumbnailUrl;
