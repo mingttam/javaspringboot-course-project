@@ -88,7 +88,7 @@ public class PayoutSchedulingProperties {
 
         @Data
         public static class Admin {
-            private List<String> emails = List.of("admin@ktc-learning.com", "caominhtam.lop92@gmail.com");
+            private List<String> emails = List.of("admin@ktc-learning.com", "minhtam@gmail.com");
         }
     }
 }

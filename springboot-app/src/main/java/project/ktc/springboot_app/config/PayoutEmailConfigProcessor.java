@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 public class PayoutEmailConfigProcessor {
 
-    @Value("${app.payout.notification.admin.emails:admin@ktc-learning.com,caominhtam.lop92@gmail.com}")
+    @Value("${app.payout.notification.admin.emails:admin@ktc-learning.com,minhtam@gmail.com}")
     private String rawAdminEmails;
 
     private final PayoutSchedulingProperties payoutProperties;
